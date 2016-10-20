@@ -13,13 +13,30 @@
 #import "AMPopTip+Exit.h"
 #import "AMPopTip+Animation.h"
 
+@interface AMMaskView : UIView
+
+@property (nonatomic, copy) dispatch_block_t touchedBlock;
+
+@end
+
+@implementation AMMaskView
+
+- (void) touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [super touchesBegan:touches withEvent:event];
+    
+    if (self.touchedBlock) {
+        self.touchedBlock();
+    }
+}
+
+@end
+
 @interface AMPopTip()
 
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, strong) NSAttributedString *attributedText;
 @property (nonatomic, strong) NSMutableParagraphStyle *paragraphStyle;
 @property (nonatomic, strong) UITapGestureRecognizer *gestureRecognizer;
-@property (nonatomic, strong) UITapGestureRecognizer *tapRemoveGesture;
 @property (nonatomic, strong) NSTimer *dismissTimer;
 @property (nonatomic, weak, readwrite) UIView *containerView;
 @property (nonatomic, assign, readwrite) AMPopTipDirection direction;
@@ -29,7 +46,7 @@
 @property (nonatomic, assign) CGRect textBounds;
 @property (nonatomic, assign) CGFloat maxWidth;
 @property (nonatomic, strong) UIView *customView;
-@property (nonatomic, strong) UIView *maskView;
+@property (nonatomic, strong) AMMaskView *maskView;
 
 @end
 
@@ -91,7 +108,6 @@
     _actionAnimationIn = kDefaultBounceAnimationIn;
     _actionAnimationOut = kDefaultBounceAnimationOut;
     _bubbleOffset = kDefaultBubbleOffset;
-    _tapRemoveGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapRemoveGestureHandler)];
 }
 
 - (void)layoutSubviews {
@@ -288,12 +304,6 @@
     }
 }
 
-- (void)tapRemoveGestureHandler {
-    if (self.shouldDismissOnTapOutside) {
-        [self hide];
-    }
-}
-
 - (void)drawRect:(CGRect)rect {
     if (self.isRounded) {
         BOOL showHorizontally = self.direction == AMPopTipDirectionLeft || self.direction == AMPopTipDirectionRight;
@@ -329,7 +339,6 @@
     [self setup];
     [self setNeedsLayout];
     [self performEntranceAnimation:^{
-        [_maskView addGestureRecognizer:self.tapRemoveGesture];
         if (self.appearHandler) {
             self.appearHandler();
         }
@@ -436,7 +445,6 @@
     self.isAnimating = YES;
     [self.dismissTimer invalidate];
     self.dismissTimer = nil;
-    [_maskView removeGestureRecognizer:self.tapRemoveGesture];
 
     void (^completion)() = ^{
         [self.customView removeFromSuperview];
@@ -478,16 +486,6 @@
     [self dismissActionAnimation];
 }
 
-- (void)setShouldDismissOnTapOutside:(BOOL)shouldDismissOnTapOutside {
-    _shouldDismissOnTapOutside = shouldDismissOnTapOutside;
-    _tapRemoveGesture.enabled = shouldDismissOnTapOutside;
-}
-
-- (void)dealloc {
-    [_tapRemoveGesture removeTarget:self action:@selector(tapRemoveGestureHandler)];
-    _tapRemoveGesture = nil;
-}
-
 - (void) didMoveToSuperview {
     [super didMoveToSuperview];
     
@@ -503,9 +501,16 @@
     }
 }
 
-- (UIView *) maskView {
+- (AMMaskView *) maskView {
     if (!_maskView) {
-        _maskView = [[UIView alloc] init];
+        _maskView = [[AMMaskView alloc] init];
+        
+        __weak __typeof(self) weakSelf = self;
+        _maskView.touchedBlock = ^{
+            if (weakSelf.shouldDismissOnTapOutside) {
+                [weakSelf hide];
+            }
+        };
     }
     return _maskView;
 }

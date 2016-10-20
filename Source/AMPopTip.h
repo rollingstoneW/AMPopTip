@@ -463,6 +463,4 @@ NS_ASSUME_NONNULL_END
  */
 @property (nonatomic, assign, readonly) AMPopTipDirection direction;
 
-@property (nonatomic, strong, readonly) UIView *maskView;
-
 @end
