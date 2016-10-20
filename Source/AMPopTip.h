@@ -408,18 +408,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) BOOL shouldDismissOnTapOutside;
 
-/** Dismiss on swipe outside
-*
-* A boolean value that determines whether to dismiss when swiping outside the popover.
-*/
-@property (nonatomic, assign) BOOL shouldDismissOnSwipeOutside;
-
-/** Direction to dismiss on swipe outside
-*
-* A direction that determines what swipe direction to dismiss when swiping outside the popover.
-* The default direction is UISwipeGestureRecognizerDirectionRight if this is not set.
-*/
-@property (nonatomic, assign) UISwipeGestureRecognizerDirection swipeRemoveGestureDirection;
 NS_ASSUME_NONNULL_END
 
 /** Tap handler
@@ -474,5 +462,7 @@ NS_ASSUME_NONNULL_END
  * The direction from which the poptip is shown. Read only.
  */
 @property (nonatomic, assign, readonly) AMPopTipDirection direction;
+
+@property (nonatomic, strong, readonly) UIView *maskView;
 
 @end

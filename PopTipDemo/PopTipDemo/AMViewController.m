@@ -32,7 +32,7 @@
     self.popTip.edgeMargin = 5;
     self.popTip.offset = 2;
     self.popTip.edgeInsets = UIEdgeInsetsMake(0, 10, 0, 10);
-    self.popTip.shouldDismissOnTap = YES;
+//    self.popTip.shouldDismissOnTapOutside = NO;
 
     /*  Custom entrance animation  */
     //    self.popTip.entranceAnimation = AMPopTipEntranceAnimationCustom;
